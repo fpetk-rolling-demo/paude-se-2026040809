@@ -1,46 +1,80 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: paude-se-2026040809
-  namespace: rhdh-app
+  name: ${{ values.name }}
+  namespace: ${{ values.namespace }}
   labels:
     app: paude
-    paude.io/session-name: paude-se-2026040809
-    paude.io/agent: claude
-    app.kubernetes.io/name: paude-se-2026040809
-    app.kubernetes.io/instance: paude-se-2026040809
+    paude.io/session-name: ${{ values.name }}
+    paude.io/agent: ${{ values.agentType }}
+    app.kubernetes.io/name: ${{ values.name }}
+    app.kubernetes.io/instance: ${{ values.name }}
 spec:
   replicas: 0
   selector:
     matchLabels:
       app: paude
-      paude.io/session-name: paude-se-2026040809
+      paude.io/session-name: ${{ values.name }}
   template:
     metadata:
       labels:
         app: paude
-        paude.io/session-name: paude-se-2026040809
-        paude.io/agent: claude
+        paude.io/session-name: ${{ values.name }}
+        paude.io/agent: ${{ values.agentType }}
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
+      initContainers:
+        - name: inject-credentials
+          image: registry.access.redhat.com/ubi9/ubi-micro:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /credentials/${{ values.agentType }}
+              for f in /secret/*; do
+                filename=$(basename "$f")
+                case "$filename" in
+                  gitconfig|gitignore-global)
+                    cp "$f" /credentials/"$filename"
+                    ;;
+                  *)
+                    cp "$f" /credentials/${{ values.agentType }}/"$filename"
+                    ;;
+                esac
+              done
+              touch /credentials/.ready
+          volumeMounts:
+            - name: credentials-secret
+              mountPath: /secret
+              readOnly: true
+            - name: credentials
+              mountPath: /credentials
       containers:
         - name: agent
-          image: image-registry.openshift-image-registry.svc:5000/rhdh-app/paude-se-2026040809:latest
+          image: image-registry.openshift-image-registry.svc:5000/${{ values.namespace }}/${{ values.name }}:latest
           imagePullPolicy: Always
           env:
             - name: PAUDE_WORKSPACE
               value: /pvc/workspace
             - name: PAUDE_AGENT_NAME
-              value: claude
+              value: ${{ values.agentType }}
             - name: PAUDE_SUPPRESS_PROMPTS
               value: "1"
             - name: PAUDE_WAIT_FOR_GIT
               value: "1"
             - name: PAUDE_ALLOWED_DOMAINS
-              value: default
+              value: ${{ values.allowedDomains }}
+            {%- if values.agentType in ['cursor', 'gemini'] %}
+            - name: NODE_USE_ENV_PROXY
+              value: "1"
+            {%- endif %}
+            {%- if values.yolo %}
             - name: PAUDE_AGENT_ARGS
               value: '-p "$(cat /pvc/TASK.md)" --dangerously-skip-permissions'
+            {%- else %}
+            - name: PAUDE_AGENT_ARGS
+              value: '-p "$(cat /pvc/TASK.md)"'
+            {%- endif %}
           resources:
             requests:
               cpu: "100m"
@@ -56,12 +90,12 @@ spec:
       volumes:
         - name: workspace
           persistentVolumeClaim:
-            claimName: paude-se-2026040809-workspace
+            claimName: ${{ values.name }}-workspace
         - name: credentials
           emptyDir:
             medium: Memory
             sizeLimit: 100Mi
-        - name: credentials
+        - name: credentials-secret
           secret:
-            secretName: claude-secrets
+            secretName: ${{ values.agentType }}-secrets
   volumeClaimTemplates: []
