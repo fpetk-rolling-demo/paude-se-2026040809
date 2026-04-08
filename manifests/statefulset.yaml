@@ -28,7 +28,6 @@ spec:
         - name: agent
           image: image-registry.openshift-image-registry.svc:5000/rhdh-app/paude-se-2026040809:latest
           imagePullPolicy: Always
-          command: ["tini", "--", "sleep", "infinity"]
           env:
             - name: PAUDE_WORKSPACE
               value: /pvc/workspace
