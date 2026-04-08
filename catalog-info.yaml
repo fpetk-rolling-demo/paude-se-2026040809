@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: paude-se-2026040809
+  description: Paude agent session bound to task component:default/flask-app-task and role component:default/software-engineer-role
+  annotations:
+    backstage.io/kubernetes-id: paude-se-2026040809
+    backstage.io/techdocs-ref: dir:.
+    argocd/app-selector: app.kubernetes.io/part-of=paude-se-2026040809
+    paude.io/agent-type: claude
+    paude.io/yolo: "true"
+    paude.io/allowed-domains: default
+spec:
+  type: paude-agent
+  owner: user:default/theofanispetkos
+  lifecycle: experimental
+  dependsOn:
+    - component:component:default/flask-app-task
+    - component:component:default/software-engineer-role
+    - component:component:default/my-project-18

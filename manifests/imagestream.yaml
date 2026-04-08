@@ -1,0 +1,11 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: paude-se-2026040809
+  namespace: rhdh-app
+  labels:
+    app: paude
+    paude.io/session-name: paude-se-2026040809
+spec:
+  lookupPolicy:
+    local: true

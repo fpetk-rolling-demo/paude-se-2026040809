@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paude-se-2026040809-workspace
+  namespace: rhdh-app
+  labels:
+    app: paude
+    paude.io/session-name: paude-se-2026040809
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

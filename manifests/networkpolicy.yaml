@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: paude-se-2026040809-allow-domains
+  namespace: rhdh-app
+  labels:
+    app: paude
+    paude.io/session-name: paude-se-2026040809
+  annotations:
+    paude.io/allowed-domains: default
+spec:
+  podSelector:
+    matchLabels:
+      paude.io/session-name: paude-se-2026040809
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow HTTPS to permitted domains (enforced by the paude network proxy)
+    - ports:
+        - port: 443
+          protocol: TCP
+        - port: 80
+          protocol: TCP

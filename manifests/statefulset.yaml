@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: paude-se-2026040809
+  namespace: rhdh-app
+  labels:
+    app: paude
+    paude.io/session-name: paude-se-2026040809
+    paude.io/agent: claude
+    app.kubernetes.io/name: paude-se-2026040809
+    app.kubernetes.io/instance: paude-se-2026040809
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: paude
+      paude.io/session-name: paude-se-2026040809
+  template:
+    metadata:
+      labels:
+        app: paude
+        paude.io/session-name: paude-se-2026040809
+        paude.io/agent: claude
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      containers:
+        - name: agent
+          image: paude-se-2026040809:latest
+          imagePullPolicy: Always
+          command: ["tini", "--", "sleep", "infinity"]
+          env:
+            - name: PAUDE_WORKSPACE
+              value: /pvc/workspace
+            - name: PAUDE_AGENT_NAME
+              value: claude
+            - name: PAUDE_SUPPRESS_PROMPTS
+              value: "1"
+            - name: PAUDE_WAIT_FOR_GIT
+              value: "1"
+            - name: PAUDE_ALLOWED_DOMAINS
+              value: default
+            - name: PAUDE_AGENT_ARGS
+              value: '-p "$(cat /pvc/TASK.md)" --dangerously-skip-permissions'
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"
+          volumeMounts:
+            - name: workspace
+              mountPath: /pvc
+            - name: credentials
+              mountPath: /credentials
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: paude-se-2026040809-workspace
+        - name: credentials
+          emptyDir:
+            medium: Memory
+            sizeLimit: 100Mi
+  volumeClaimTemplates: []

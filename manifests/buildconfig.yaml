@@ -1,0 +1,25 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: paude-se-2026040809
+  namespace: rhdh-app
+  labels:
+    app: paude
+    paude.io/session-name: paude-se-2026040809
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/fpetk-rolling-demo/paude-se-2026040809
+      ref: main
+    contextDir: agent
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: paude-se-2026040809:latest
+  triggers:
+    - type: ConfigChange
