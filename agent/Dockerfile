@@ -1,15 +1,5 @@
 FROM quay.io/bbrowning/paude-base-centos10:0.15.0
-{%- if values.agentType == 'gemini' or values.agentType == 'cursor' %}
-# Agent type: ${{ values.agentType }} — ensure the correct binary is active
-ENV PAUDE_AGENT_NAME=${{ values.agentType }}
-{%- else %}
 ENV PAUDE_AGENT_NAME=claude
-{%- endif %}
-
-{%- if values.extraPackages %}
-# Install extra packages requested for this agent
-RUN dnf install -y ${{ values.extraPackages }} && dnf clean all
-{%- endif %}
 
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY --chmod=755 entrypoint-session.sh /usr/local/bin/entrypoint-session.sh
