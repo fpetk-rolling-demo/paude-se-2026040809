@@ -61,4 +61,7 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 100Mi
+        - name: credentials
+          secret:
+            secretName: claude-secrets
   volumeClaimTemplates: []
