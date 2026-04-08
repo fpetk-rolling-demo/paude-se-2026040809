@@ -64,17 +64,10 @@ spec:
               value: "1"
             - name: PAUDE_ALLOWED_DOMAINS
               value: ${{ values.allowedDomains }}
-            {%- if values.agentType in ['cursor', 'gemini'] %}
             - name: NODE_USE_ENV_PROXY
-              value: "1"
-            {%- endif %}
-            {%- if values.yolo %}
+              value: "${{ '1' if values.agentType in ['cursor', 'gemini'] else '0' }}"
             - name: PAUDE_AGENT_ARGS
-              value: '-p "$(cat /pvc/TASK.md)" --dangerously-skip-permissions'
-            {%- else %}
-            - name: PAUDE_AGENT_ARGS
-              value: '-p "$(cat /pvc/TASK.md)"'
-            {%- endif %}
+              value: "${{ '-p \"$(cat /pvc/TASK.md)\" --dangerously-skip-permissions' if values.yolo else '-p \"$(cat /pvc/TASK.md)\"' }}"
           resources:
             requests:
               cpu: "100m"
